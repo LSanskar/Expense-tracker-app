@@ -1,9 +1,27 @@
 import shelve
+
+class Expense:
+    def __init__(self,name,amount,category):
+        self.name = name
+        self.amount = amount
+        self.category = category
+    
+class ExpenseManager:
+    def __init__(self,expenses):
+        self.expenses = expenses
+    def addExpense(self,expense):
+        self.expenses.append(expense)
+    def showExpense(self):
+        for i in self.expenses:
+            print(f"{i.name}, {i.amount}, {i.category}")
+
 categories = {1:'Groceries'
               ,2: 'Bills'
               ,3: 'Rent'
               ,4: 'Miscellaneous'}  
         
+exp_manager = ExpenseManager([])
+
 
 while True:
     print("1. Add Expense")
@@ -15,35 +33,20 @@ while True:
     choice = input("Choose: ")
 
     if choice == "1":
-        with shelve.open('expenses_data') as db:
-            if ('expenses' in db):
-                temp_expenses = db["expenses"]
-            else:
-                temp_expenses = []       
         name = input("Expense name: ")
         amount = float(input("Amount: "))
-        for i in categories:
-            print(f"{i}:{categories[i]}")
         category_selector = int(input("Choose between the categories for this expense"))    
         while (not(category_selector in categories)):
             print("Enter valid response")
             category_selector = input("Choose between the categories for this expense")
-        else:
-            temp_expenses.append((name,amount,categories[category_selector]))
-        with shelve.open('expenses_data') as db:
-            db["expenses"]= temp_expenses
-            print(temp_expenses)
-        
+        exp_selector = Expense(name,amount,categories[category_selector])
+
+        exp_manager.addExpense(exp_selector)
+        print("Expense added")
             
             
     elif choice == "2":
-        with shelve.open('expenses_data') as db:
-            if ('expenses' in db):
-                 data = db["expenses"]
-            else:
-                data = ['There are no expenses rn!']     
-        for i in data:
-            print(i)    
+        exp_manager.showExpense()   
 
     elif choice== "3":
         new_category = input("add new category: ")
@@ -52,18 +55,17 @@ while True:
 
     elif choice== "4":
         total=0
-        with shelve.open('expenses_data') as db:
-            if ('expenses' in db):
-                expenses = db['expenses']
-                for expense in expenses:
-                    total+=expense[1]
-                print(total)    
-            else:
-                print("There are no expenses rn!")
-
+        if exp_manager.expenses:
+            for i in exp_manager.expenses:
+                total+=i.amount
+            print(total)
+        else:
+            print("no expense added yet")
             
 
     elif choice == "5":
         break        
     else:
         print("Invalid response")
+
+
