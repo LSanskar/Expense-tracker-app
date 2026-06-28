@@ -1,3 +1,4 @@
+import os
 import shelve
 
 class Expense:
@@ -11,9 +12,35 @@ class ExpenseManager:
         self.expenses = expenses
     def addExpense(self,expense):
         self.expenses.append(expense)
+   
+    def saveData(self):
+        with shelve.open('Expenses_data') as db:
+            db['expenses'] = self.expenses
+    def loadData(self):
+        with shelve.open('Expenses_data') as db:
+            if "expenses" in db:
+                if db["expenses"]:
+                    return db['expenses']
+                else:
+                    return False
+            else:
+                return False
     def showExpense(self):
-        for i in self.expenses:
-            print(f"{i.name}, {i.amount}, {i.category}")
+        temp_data = self.loadData()
+        if temp_data:
+            for i in temp_data:
+                print(f"{i.name} {i.amount} {i.category}")
+        else:
+            print('There is no data rn')        
+    def clearData(self):
+        extensions = [".dat",".db",".dir",".bak"]
+        file_path = []
+        for i in extensions:
+            file_path = f"Expenses_data"
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            else:
+                pass 
 
 categories = {1:'Groceries'
               ,2: 'Bills'
@@ -22,13 +49,21 @@ categories = {1:'Groceries'
         
 exp_manager = ExpenseManager([])
 
+if (exp_manager.loadData()):
+    exp_manager = ExpenseManager(exp_manager.loadData())
+
+for file in os.listdir():
+    print(file)
+
+
 
 while True:
     print("1. Add Expense")
     print("2. View Expenses")
     print("3. Add custom categories")
     print("4. Total spending")
-    print("5. Exit")
+    print("5. Delete expenses")
+    print("6. Exit")
 
     choice = input("Choose: ")
 
@@ -42,6 +77,7 @@ while True:
         exp_selector = Expense(name,amount,categories[category_selector])
 
         exp_manager.addExpense(exp_selector)
+        exp_manager.saveData()
         print("Expense added")
             
             
@@ -55,15 +91,19 @@ while True:
 
     elif choice== "4":
         total=0
-        if exp_manager.expenses:
-            for i in exp_manager.expenses:
+
+        if exp_manager.loadData():
+            for i in exp_manager.loadData():
                 total+=i.amount
             print(total)
         else:
             print("no expense added yet")
-            
+    
+    elif choice=="5":
+        exp_manager.clearData()
+        print("Data is deleted")
 
-    elif choice == "5":
+    elif choice == "6":
         break        
     else:
         print("Invalid response")
